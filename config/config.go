@@ -20,7 +20,7 @@ type PostgresCfg struct {
 	Port         string `env:"PG_PORT" env-default:"5432"`
 	Host         string `env:"POSTGRES_HOST" env-default:"localhost"`
 	NameDB       string `env:"POSTGRES_DB" env-default:"postgres"`
-	InitFilePath string `env:"PG_INIT_SQL_PATH" env-default:"./sql/task.sql"`
+	InitFilePath string `env:"PG_INIT_SQL_PATH" env-default:"./internal/sql/task.sql"`
 }
 
 func ParseConfigValues() (Config, error) {

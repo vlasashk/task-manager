@@ -1,7 +1,8 @@
 package todo
 
 type Repo interface {
-	CreateTask(task Task) (Task, error)
-	DeleteTaskByID(taskID string) error
-	GetTaskByID(taskID string) (Task, error)
+	CreateTask(task TaskReq) (Task, error)
+	DeleteTask(taskID string) error
+	GetTask(taskID string) (Task, error)
+	UpdateTask(task TaskReq, taskID string) (Task, error)
 }

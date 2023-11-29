@@ -24,5 +24,6 @@ func main() {
 		log.Fatal().Err(err).Send()
 	}
 	log.Info().Msg("db connection success")
-	httpchi.Run(storage, cfg.App)
+	service := httpchi.NewService(storage)
+	httpchi.Run(service, log, cfg.App)
 }
