@@ -17,7 +17,9 @@ func main() {
 		log.Fatal().Err(err).Msg("config parse fail")
 	}
 	log.Info().Msg("config parsing success")
-	storage, err := pgrepo.NewTasksRepo(context.Background(), cfg.Postgres)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	storage, err := pgrepo.NewTasksRepo(ctx, cfg.Postgres)
 	if err != nil {
 		log.Fatal().Err(err).Send()
 	}

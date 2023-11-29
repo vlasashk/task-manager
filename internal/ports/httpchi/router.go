@@ -3,11 +3,11 @@ package httpchi
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/vlasashk/todo-manager/internal/models/task"
+	"github.com/vlasashk/todo-manager/internal/models/todo"
 	"net/http"
 )
 
-func NewRouter(db task.Repo) http.Handler {
+func NewRouter(db todo.Repo) http.Handler {
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
@@ -21,7 +21,7 @@ func NewRouter(db task.Repo) http.Handler {
 	return r
 }
 
-func RegisterRoutes(r *chi.Mux, db task.Repo) {
+func RegisterRoutes(r *chi.Mux, db todo.Repo) {
 	api := chi.NewRouter()
 
 	api.Post("/task", nil)
