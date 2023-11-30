@@ -1,3 +1,4 @@
+// Package httpchi implements HTTP handlers for the API.
 package httpchi
 
 import (
@@ -5,15 +6,27 @@ import (
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
 	"github.com/rs/zerolog"
-	"github.com/vlasashk/todo-manager/internal/adapters/pgrepo"
-	"github.com/vlasashk/todo-manager/internal/models/todo"
+	"github.com/vlasashk/task-manager/internal/adapters/pgrepo"
+	"github.com/vlasashk/task-manager/internal/models/tasktodo"
 	"net/http"
 	"strconv"
 	"time"
 )
 
+// CreateTask creates a new task.
+//
+//	@Summary		creates a new task
+//	@Description	Creates a task with specified fields: title, description, due date, and completion status
+//	@Tags			Tasks
+//	@Accept			json
+//	@Produce		json
+//	@Param			taskRequest	body		tasktodo.Request	true	"Data of the new task"
+//	@Success		201			{object}	tasktodo.Task		"Task successfully created"
+//	@Failure		400			{object}	ErrResp				"Incorrect JSON or invalid date format"
+//	@Failure		422			{object}	ErrResp				"Invalid JSON"
+//	@Router			/task [post]
 func (s Service) CreateTask(w http.ResponseWriter, r *http.Request) {
-	taskRequest := todo.TaskReq{}
+	taskRequest := tasktodo.Request{}
 	log := *zerolog.Ctx(r.Context())
 	if err := render.DecodeJSON(r.Body, &taskRequest); err != nil {
 		log.Error().Err(err).Send()
@@ -41,6 +54,17 @@ func (s Service) CreateTask(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, r, newTask)
 }
 
+// GetSingleTask returns a task based on the specified ID.
+//
+//	@Summary		Gets a task by ID
+//	@Description	Retrieves a task based on the provided identifier
+//	@Tags			Tasks
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string			true	"Task ID"
+//	@Success		200	{object}	tasktodo.Task	"Task successfully retrieved"
+//	@Failure		404	{object}	MsgResp			"Task not found"
+//	@Router			/task/{id} [get]
 func (s Service) GetSingleTask(w http.ResponseWriter, r *http.Request) {
 	log := *zerolog.Ctx(r.Context())
 	taskID := chi.URLParam(r, "id")
@@ -56,6 +80,17 @@ func (s Service) GetSingleTask(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, r, task)
 }
 
+// DeleteTask deletes a task by the specified ID.
+//
+//	@Summary		Deletes a task by ID
+//	@Description	Deletes a task by the specified identifier
+//	@Tags			Tasks
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string	true	"Task ID"
+//	@Success		200	{object}	MsgResp	"Task successfully deleted"
+//	@Failure		404	{object}	MsgResp	"Task not found"
+//	@Router			/task/{id} [delete]
 func (s Service) DeleteTask(w http.ResponseWriter, r *http.Request) {
 	log := *zerolog.Ctx(r.Context())
 	taskID := chi.URLParam(r, "id")
@@ -70,8 +105,22 @@ func (s Service) DeleteTask(w http.ResponseWriter, r *http.Request) {
 	NewMsg("success").Send(w, r, http.StatusOK)
 }
 
+// UpdateTask updates a task by the specified ID.
+//
+//	@Summary		Updates a task by ID
+//	@Description	Updates a task by the specified identifier
+//	@Tags			Tasks
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		string				true	"Task ID"
+//	@Param			taskUpd	body		tasktodo.Request	true	"Data for updating the task"
+//	@Success		200		{object}	tasktodo.Task		"Task successfully updated"
+//	@Failure		400		{object}	ErrResp				"Incorrect JSON or invalid date format"
+//	@Failure		404		{object}	MsgResp				"Task not found"
+//	@Failure		422		{object}	ErrResp				"Invalid JSON"
+//	@Router			/task/{id} [put]
 func (s Service) UpdateTask(w http.ResponseWriter, r *http.Request) {
-	taskUpd := todo.TaskReq{}
+	taskUpd := tasktodo.Request{}
 	log := *zerolog.Ctx(r.Context())
 	taskID := chi.URLParam(r, "id")
 	log.Info().Str("id", taskID).Msg("task id received")
@@ -102,6 +151,20 @@ func (s Service) UpdateTask(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, r, newTask)
 }
 
+// ListTasks returns a list of tasks considering request parameters.
+//
+//	@Summary		Returns a list of tasks with filtering and pagination
+//	@Description	Retrieves a list of tasks based on status, date, and page for pagination
+//	@Tags			Tasks
+//	@Accept			json
+//	@Produce		json
+//	@Param			status	query		string			false	"Task completion status (true/false)"
+//	@Param			date	query		string			false	"Task date (format: YYYY-MM-DD)"
+//	@Param			page	query		string			false	"Page number for pagination"
+//	@Success		200		{object}	[]tasktodo.Task	"List of tasks"
+//	@Failure		400		{object}	ErrResp			"Invalid request parameters"
+//	@Failure		404		{object}	MsgResp			"Tasks not found"
+//	@Router			/tasks [get]
 func (s Service) ListTasks(w http.ResponseWriter, r *http.Request) {
 	log := *zerolog.Ctx(r.Context())
 	status := r.URL.Query().Get("status")

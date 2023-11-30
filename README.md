@@ -1,4 +1,4 @@
-# TODO-manager
+# Task-manager
 
 - POST /api/task - Создание задачи
     ```

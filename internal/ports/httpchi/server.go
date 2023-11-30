@@ -2,16 +2,16 @@ package httpchi
 
 import (
 	"github.com/rs/zerolog"
-	"github.com/vlasashk/todo-manager/config"
-	"github.com/vlasashk/todo-manager/internal/models/todo"
+	"github.com/vlasashk/task-manager/config"
+	"github.com/vlasashk/task-manager/internal/models/tasktodo"
 	"net/http"
 )
 
 type Service struct {
-	DB todo.Repo
+	DB tasktodo.Repo
 }
 
-func NewService(db todo.Repo) Service {
+func NewService(db tasktodo.Repo) Service {
 	return Service{
 		DB: db,
 	}

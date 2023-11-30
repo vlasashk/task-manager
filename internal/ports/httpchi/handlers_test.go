@@ -5,10 +5,10 @@ import (
 	"errors"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/suite"
-	"github.com/vlasashk/todo-manager/internal/adapters/pgrepo"
-	"github.com/vlasashk/todo-manager/internal/models/mocks"
-	"github.com/vlasashk/todo-manager/internal/models/todo"
-	"github.com/vlasashk/todo-manager/internal/ports/httpchi"
+	"github.com/vlasashk/task-manager/internal/adapters/pgrepo"
+	"github.com/vlasashk/task-manager/internal/models/mocks"
+	"github.com/vlasashk/task-manager/internal/models/tasktodo"
+	"github.com/vlasashk/task-manager/internal/ports/httpchi"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -20,21 +20,21 @@ import (
 type UnitTestSuite struct {
 	suite.Suite
 	service  httpchi.Service
-	storage  todo.Repo
-	taskReq  todo.TaskReq
-	testTask todo.Task
+	storage  tasktodo.Repo
+	taskReq  tasktodo.Request
+	testTask tasktodo.Task
 }
 
 func (suite *UnitTestSuite) SetupTest() {
 	suite.storage = mocks.NewRepo(suite.T())
 	stat := false
-	suite.taskReq = todo.TaskReq{
+	suite.taskReq = tasktodo.Request{
 		Title:       "test",
 		Description: "test",
 		DueDate:     "2024-10-26",
 		Status:      &stat,
 	}
-	suite.testTask = todo.New(suite.taskReq)
+	suite.testTask = tasktodo.New(suite.taskReq)
 	suite.testTask.ID = "test"
 }
 
@@ -63,7 +63,7 @@ func (suite *UnitTestSuite) TestCreateTask() {
 		},
 		{
 			storageOutput: func() {
-				suite.storage.(*mocks.Repo).On("CreateTask", suite.taskReq).Return(todo.Task{}, errors.New("any err")).Once()
+				suite.storage.(*mocks.Repo).On("CreateTask", suite.taskReq).Return(tasktodo.Task{}, errors.New("any err")).Once()
 			},
 			expectedCode: http.StatusInternalServerError,
 			expectedResp: `{"param":"id","error":"action fail"}`,
@@ -73,7 +73,7 @@ func (suite *UnitTestSuite) TestCreateTask() {
 		},
 		{
 			storageOutput: func() {
-				suite.storage.(*mocks.Repo).On("CreateTask", suite.taskReq).Return(todo.Task{}, errors.New(pgrepo.DateErr)).Once()
+				suite.storage.(*mocks.Repo).On("CreateTask", suite.taskReq).Return(tasktodo.Task{}, errors.New(pgrepo.DateErr)).Once()
 			},
 			expectedCode: http.StatusConflict,
 			expectedResp: `{"param":"date","value":"2024-10-26","error":"bad date"}`,
@@ -136,7 +136,7 @@ func (suite *UnitTestSuite) TestGetSingleTask() {
 		},
 		{
 			storageOutput: func() {
-				suite.storage.(*mocks.Repo).On("GetTask", "test").Return(todo.Task{}, errors.New("any err")).Once()
+				suite.storage.(*mocks.Repo).On("GetTask", "test").Return(tasktodo.Task{}, errors.New("any err")).Once()
 			},
 			expectedCode: http.StatusInternalServerError,
 			expectedResp: `{"param":"id","value":"test","error":"action fail"}`,
@@ -146,7 +146,7 @@ func (suite *UnitTestSuite) TestGetSingleTask() {
 		},
 		{
 			storageOutput: func() {
-				suite.storage.(*mocks.Repo).On("GetTask", "test").Return(todo.Task{}, errors.New(pgrepo.InvalidIdErr)).Once()
+				suite.storage.(*mocks.Repo).On("GetTask", "test").Return(tasktodo.Task{}, errors.New(pgrepo.InvalidIdErr)).Once()
 			},
 			expectedCode: http.StatusNotFound,
 			expectedResp: `{"message":"invalid task id"}`,
@@ -241,7 +241,7 @@ func (suite *UnitTestSuite) TestUpdateTask() {
 		},
 		{
 			storageOutput: func() {
-				suite.storage.(*mocks.Repo).On("UpdateTask", suite.taskReq, "test").Return(todo.Task{}, errors.New("any err")).Once()
+				suite.storage.(*mocks.Repo).On("UpdateTask", suite.taskReq, "test").Return(tasktodo.Task{}, errors.New("any err")).Once()
 			},
 			expectedCode: http.StatusInternalServerError,
 			expectedResp: `{"param":"id","value":"test","error":"action fail"}`,
@@ -252,7 +252,7 @@ func (suite *UnitTestSuite) TestUpdateTask() {
 		},
 		{
 			storageOutput: func() {
-				suite.storage.(*mocks.Repo).On("UpdateTask", suite.taskReq, "test").Return(todo.Task{}, errors.New(pgrepo.DateErr)).Once()
+				suite.storage.(*mocks.Repo).On("UpdateTask", suite.taskReq, "test").Return(tasktodo.Task{}, errors.New(pgrepo.DateErr)).Once()
 			},
 			expectedCode: http.StatusConflict,
 			expectedResp: `{"param":"date","value":"2024-10-26","error":"bad date"}`,
@@ -315,7 +315,7 @@ func (suite *UnitTestSuite) TestListTasks() {
 		page   string
 		TestCase
 	}
-	tasks := make([]todo.Task, 0, 2)
+	tasks := make([]tasktodo.Task, 0, 2)
 	task2 := suite.testTask
 	task2.ID += "2"
 	task2.Description += "2"
@@ -344,7 +344,7 @@ func (suite *UnitTestSuite) TestListTasks() {
 			page:   "1",
 			TestCase: TestCase{
 				storageOutput: func() {
-					suite.storage.(*mocks.Repo).On("ListTasks", uint(1), "2024-10-26", "true").Return([]todo.Task{}, nil).Once()
+					suite.storage.(*mocks.Repo).On("ListTasks", uint(1), "2024-10-26", "true").Return([]tasktodo.Task{}, nil).Once()
 				},
 				expectedCode: http.StatusNotFound,
 				expectedResp: `{"message":"nothing found"}`,

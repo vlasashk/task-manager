@@ -4,6 +4,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog"
+	httpSwagger "github.com/swaggo/http-swagger"
+	_ "github.com/vlasashk/task-manager/docs"
 	"net/http"
 )
 
@@ -32,4 +34,5 @@ func RegisterRoutes(r *chi.Mux, service Service) {
 	api.Delete("/task/{id}", service.DeleteTask)
 
 	r.Mount("/api", api)
+	r.Mount("/swagger", httpSwagger.WrapHandler)
 }

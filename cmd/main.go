@@ -1,12 +1,20 @@
+//	@title			task-manager API
+//	@version		1.0
+//	@description	API for task manager
+
+//	@host		localhost:9090
+//	@BasePath	/api/
+
+// @securityDefinitions.basic	BasicAuth
 package main
 
 import (
 	"context"
 	"github.com/rs/zerolog"
-	"github.com/vlasashk/todo-manager/config"
-	"github.com/vlasashk/todo-manager/internal/adapters/pgrepo"
-	"github.com/vlasashk/todo-manager/internal/models/logger"
-	"github.com/vlasashk/todo-manager/internal/ports/httpchi"
+	"github.com/vlasashk/task-manager/config"
+	"github.com/vlasashk/task-manager/internal/adapters/pgrepo"
+	"github.com/vlasashk/task-manager/internal/models/logger"
+	"github.com/vlasashk/task-manager/internal/ports/httpchi"
 )
 
 func main() {

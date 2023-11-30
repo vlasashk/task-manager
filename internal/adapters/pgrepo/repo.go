@@ -7,7 +7,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/rs/zerolog/log"
-	"github.com/vlasashk/todo-manager/internal/models/todo"
+	"github.com/vlasashk/task-manager/internal/models/tasktodo"
 	"time"
 )
 
@@ -27,7 +27,7 @@ const (
 
 const (
 	createQry  = `INSERT INTO tasks (id, title, description, due_date, status) VALUES ($1, $2, $3, $4, $5)`
-	deleteQry  = `UPDATE tasks SET deleted_at = NOW() WHERE id = $1`
+	deleteQry  = `UPDATE tasks SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL`
 	getByIDQry = `SELECT id, title, description, due_date, status 
 					FROM tasks 
 					WHERE id = $1 AND deleted_at IS NULL`
@@ -36,19 +36,19 @@ const (
         			WHERE id = $5 AND deleted_at IS NULL`
 )
 
-func (db Repo) CreateTask(taskReq todo.TaskReq) (todo.Task, error) {
+func (db Repo) CreateTask(taskReq tasktodo.Request) (tasktodo.Task, error) {
 	ctx, cancel := context.WithTimeout(db.ctx, defaultTimeout)
 	defer cancel()
-	newTask := todo.New(taskReq)
+	newTask := tasktodo.New(taskReq)
 	conn, err := db.DB.Acquire(ctx)
 	if err != nil {
-		return todo.Task{}, fmt.Errorf("connection acquire fail: %v", err)
+		return tasktodo.Task{}, fmt.Errorf("connection acquire fail: %v", err)
 	}
 	defer conn.Release()
 
 	tx, err := conn.Begin(ctx)
 	if err != nil {
-		return todo.Task{}, fmt.Errorf("begin transaction fail: %v", err)
+		return tasktodo.Task{}, fmt.Errorf("begin transaction fail: %v", err)
 	}
 	defer func() {
 		txFinisher(ctx, tx, err)
@@ -57,9 +57,9 @@ func (db Repo) CreateTask(taskReq todo.TaskReq) (todo.Task, error) {
 	if _, err = tx.Exec(ctx, createQry, newTask.ID, newTask.Title, newTask.Description, newTask.DueDate, newTask.Status); err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
-			return todo.Task{}, errorHandler(pgErr)
+			return tasktodo.Task{}, errorHandler(pgErr)
 		}
-		return todo.Task{}, fmt.Errorf("exec transaction fail: %v", err)
+		return tasktodo.Task{}, fmt.Errorf("exec transaction fail: %v", err)
 	}
 
 	return newTask, nil
@@ -94,46 +94,46 @@ func (db Repo) DeleteTask(taskID string) error {
 	return nil
 }
 
-func (db Repo) GetTask(taskID string) (todo.Task, error) {
+func (db Repo) GetTask(taskID string) (tasktodo.Task, error) {
 	ctx, cancel := context.WithTimeout(db.ctx, defaultTimeout)
 	defer cancel()
 	conn, err := db.DB.Acquire(ctx)
 	if err != nil {
-		return todo.Task{}, fmt.Errorf("connection acquire fail: %v", err)
+		return tasktodo.Task{}, fmt.Errorf("connection acquire fail: %v", err)
 	}
 	defer conn.Release()
 
 	row := conn.QueryRow(ctx, getByIDQry, taskID)
 
-	var task todo.Task
+	var task tasktodo.Task
 	var tempTime time.Time
 	err = row.Scan(&task.ID, &task.Title, &task.Description, &tempTime, &task.Status)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return todo.Task{}, errors.New(InvalidIdErr)
+			return tasktodo.Task{}, errors.New(InvalidIdErr)
 		}
-		return todo.Task{}, fmt.Errorf("query execution fail: %v", err)
+		return tasktodo.Task{}, fmt.Errorf("query execution fail: %v", err)
 	}
 	task.DueDate = tempTime.Format("2006-01-02")
 	return task, nil
 }
 
-func (db Repo) UpdateTask(newData todo.TaskReq, taskID string) (todo.Task, error) {
-	updTask := todo.Task{
+func (db Repo) UpdateTask(newData tasktodo.Request, taskID string) (tasktodo.Task, error) {
+	updTask := tasktodo.Task{
 		ID:      taskID,
-		TaskReq: newData,
+		Request: newData,
 	}
 	ctx, cancel := context.WithTimeout(db.ctx, defaultTimeout)
 	defer cancel()
 	conn, err := db.DB.Acquire(ctx)
 	if err != nil {
-		return todo.Task{}, fmt.Errorf("connection acquire fail: %v", err)
+		return tasktodo.Task{}, fmt.Errorf("connection acquire fail: %v", err)
 	}
 	defer conn.Release()
 
 	tx, err := conn.Begin(ctx)
 	if err != nil {
-		return todo.Task{}, fmt.Errorf("begin transaction fail: %v", err)
+		return tasktodo.Task{}, fmt.Errorf("begin transaction fail: %v", err)
 	}
 	defer func() {
 		txFinisher(ctx, tx, err)
@@ -143,19 +143,19 @@ func (db Repo) UpdateTask(newData todo.TaskReq, taskID string) (todo.Task, error
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
-			return todo.Task{}, errorHandler(pgErr)
+			return tasktodo.Task{}, errorHandler(pgErr)
 		}
-		return todo.Task{}, fmt.Errorf("executing update query fail: %v", err)
+		return tasktodo.Task{}, fmt.Errorf("executing update query fail: %v", err)
 	}
 
 	if res.RowsAffected() == 0 {
-		return todo.Task{}, errors.New(InvalidIdErr)
+		return tasktodo.Task{}, errors.New(InvalidIdErr)
 	}
 
 	return updTask, nil
 }
 
-func (db Repo) ListTasks(page uint, date string, status string) ([]todo.Task, error) {
+func (db Repo) ListTasks(page uint, date string, status string) ([]tasktodo.Task, error) {
 	ctx, cancel := context.WithTimeout(db.ctx, defaultTimeout)
 	defer cancel()
 	conn, err := db.DB.Acquire(ctx)
@@ -187,10 +187,10 @@ func (db Repo) ListTasks(page uint, date string, status string) ([]todo.Task, er
 	}
 	defer rows.Close()
 
-	tasks := make([]todo.Task, 0, defaultLimit)
+	tasks := make([]tasktodo.Task, 0, defaultLimit)
 
 	for rows.Next() {
-		var task todo.Task
+		var task tasktodo.Task
 		var tempTime time.Time
 		if err = rows.Scan(&task.ID, &task.Title, &task.Description, &tempTime, &task.Status); err != nil {
 			return nil, fmt.Errorf("scanning rows fail: %v", err)
