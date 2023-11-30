@@ -29,7 +29,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/task.Request"
+                            "$ref": "#/definitions/tasktodo.Request"
                         }
                     }
                 ],
@@ -37,7 +37,7 @@
                     "201": {
                         "description": "Task successfully created",
                         "schema": {
-                            "$ref": "#/definitions/task.Task"
+                            "$ref": "#/definitions/tasktodo.Task"
                         }
                     },
                     "400": {
@@ -81,7 +81,7 @@
                     "200": {
                         "description": "Task successfully retrieved",
                         "schema": {
-                            "$ref": "#/definitions/task.Task"
+                            "$ref": "#/definitions/tasktodo.Task"
                         }
                     },
                     "404": {
@@ -118,7 +118,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/task.Request"
+                            "$ref": "#/definitions/tasktodo.Request"
                         }
                     }
                 ],
@@ -126,7 +126,7 @@
                     "200": {
                         "description": "Task successfully updated",
                         "schema": {
-                            "$ref": "#/definitions/task.Task"
+                            "$ref": "#/definitions/tasktodo.Task"
                         }
                     },
                     "400": {
@@ -225,7 +225,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/task.Task"
+                                "$ref": "#/definitions/tasktodo.Task"
                             }
                         }
                     },
@@ -268,7 +268,7 @@
                 }
             }
         },
-        "task.Request": {
+        "tasktodo.Request": {
             "type": "object",
             "required": [
                 "description",
@@ -291,7 +291,7 @@
                 }
             }
         },
-        "task.Task": {
+        "tasktodo.Task": {
             "type": "object",
             "required": [
                 "description",

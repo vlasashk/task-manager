@@ -14,7 +14,7 @@ definitions:
       message:
         type: string
     type: object
-  task.Request:
+  tasktodo.Request:
     properties:
       description:
         type: string
@@ -30,7 +30,7 @@ definitions:
     - status
     - title
     type: object
-  task.Task:
+  tasktodo.Task:
     properties:
       description:
         type: string
@@ -68,14 +68,14 @@ paths:
         name: taskRequest
         required: true
         schema:
-          $ref: '#/definitions/task.Request'
+          $ref: '#/definitions/tasktodo.Request'
       produces:
       - application/json
       responses:
         "201":
           description: Task successfully created
           schema:
-            $ref: '#/definitions/task.Task'
+            $ref: '#/definitions/tasktodo.Task'
         "400":
           description: Incorrect JSON or invalid date format
           schema:
@@ -128,7 +128,7 @@ paths:
         "200":
           description: Task successfully retrieved
           schema:
-            $ref: '#/definitions/task.Task'
+            $ref: '#/definitions/tasktodo.Task'
         "404":
           description: Task not found
           schema:
@@ -151,14 +151,14 @@ paths:
         name: taskUpd
         required: true
         schema:
-          $ref: '#/definitions/task.Request'
+          $ref: '#/definitions/tasktodo.Request'
       produces:
       - application/json
       responses:
         "200":
           description: Task successfully updated
           schema:
-            $ref: '#/definitions/task.Task'
+            $ref: '#/definitions/tasktodo.Task'
         "400":
           description: Incorrect JSON or invalid date format
           schema:
@@ -199,7 +199,7 @@ paths:
           description: List of tasks
           schema:
             items:
-              $ref: '#/definitions/task.Task'
+              $ref: '#/definitions/tasktodo.Task'
             type: array
         "400":
           description: Invalid request parameters

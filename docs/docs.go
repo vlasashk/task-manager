@@ -35,7 +35,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/task.Request"
+                            "$ref": "#/definitions/tasktodo.Request"
                         }
                     }
                 ],
@@ -43,7 +43,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Task successfully created",
                         "schema": {
-                            "$ref": "#/definitions/task.Task"
+                            "$ref": "#/definitions/tasktodo.Task"
                         }
                     },
                     "400": {
@@ -87,7 +87,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Task successfully retrieved",
                         "schema": {
-                            "$ref": "#/definitions/task.Task"
+                            "$ref": "#/definitions/tasktodo.Task"
                         }
                     },
                     "404": {
@@ -124,7 +124,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/task.Request"
+                            "$ref": "#/definitions/tasktodo.Request"
                         }
                     }
                 ],
@@ -132,7 +132,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Task successfully updated",
                         "schema": {
-                            "$ref": "#/definitions/task.Task"
+                            "$ref": "#/definitions/tasktodo.Task"
                         }
                     },
                     "400": {
@@ -231,7 +231,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/task.Task"
+                                "$ref": "#/definitions/tasktodo.Task"
                             }
                         }
                     },
@@ -274,7 +274,7 @@ const docTemplate = `{
                 }
             }
         },
-        "task.Request": {
+        "tasktodo.Request": {
             "type": "object",
             "required": [
                 "description",
@@ -297,7 +297,7 @@ const docTemplate = `{
                 }
             }
         },
-        "task.Task": {
+        "tasktodo.Task": {
             "type": "object",
             "required": [
                 "description",
