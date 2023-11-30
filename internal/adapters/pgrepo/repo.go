@@ -17,7 +17,7 @@ const (
 )
 
 const (
-	DateViolation = "23514"
+	dateViolation = "23514"
 )
 
 const (
@@ -221,7 +221,7 @@ func txFinisher(ctx context.Context, tx pgx.Tx, err error) {
 
 func errorHandler(pgErr *pgconn.PgError) error {
 	switch pgErr.Code {
-	case DateViolation:
+	case dateViolation:
 		return errors.New(DateErr)
 	default:
 		return pgErr

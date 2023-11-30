@@ -162,10 +162,10 @@ func errorHandler(w http.ResponseWriter, r *http.Request, log zerolog.Logger, da
 	switch err.Error() {
 	case pgrepo.InvalidIdErr:
 		log.Warn().Err(err).Send()
-		NewMsg(pgrepo.InvalidIdErr).Send(w, r, http.StatusBadRequest)
+		NewMsg(pgrepo.InvalidIdErr).Send(w, r, http.StatusNotFound)
 	case pgrepo.DateErr:
 		log.Warn().Err(err).Send()
-		NewErr("date", date, pgrepo.DateErr).Send(w, r, http.StatusBadRequest)
+		NewErr("date", date, pgrepo.DateErr).Send(w, r, http.StatusConflict)
 	default:
 		log.Error().Err(err).Send()
 		NewErr("id", taskID, "action fail").Send(w, r, http.StatusInternalServerError)
