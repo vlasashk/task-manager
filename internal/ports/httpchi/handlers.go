@@ -8,6 +8,7 @@ import (
 	"github.com/vlasashk/todo-manager/internal/adapters/pgrepo"
 	"github.com/vlasashk/todo-manager/internal/models/todo"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -101,10 +102,60 @@ func (s Service) UpdateTask(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, r, newTask)
 }
 
+func (s Service) ListTasks(w http.ResponseWriter, r *http.Request) {
+	log := *zerolog.Ctx(r.Context())
+	status := r.URL.Query().Get("status")
+	date := r.URL.Query().Get("date")
+	page := r.URL.Query().Get("page")
+	pageNum, errResp, err := validateParams(status, date, page)
+	if err != nil {
+		log.Error().Err(err).Send()
+		errResp.Send(w, r, http.StatusBadRequest)
+		return
+	}
+	log.Info().Str("status", status).Str("date", date).Str("page", page).Msg("params received")
+	tasks, err := s.DB.ListTasks(pageNum, date, status)
+	if err != nil {
+		errorHandler(w, r, log, "", "", err)
+		return
+	}
+	if len(tasks) == 0 {
+		log.Warn().Str("status", status).Str("date", date).Str("page", page).Msg("nothing found")
+		NewErr("", "", "nothing found").Send(w, r, http.StatusNotFound)
+		return
+	}
+	log.Info().Int("amount", len(tasks)).Msg("found successfully")
+	render.Status(r, http.StatusOK)
+	render.JSON(w, r, tasks)
+}
+
 func validateDate(date string) error {
 	layout := "2006-01-02"
 	_, err := time.Parse(layout, date)
 	return err
+}
+
+func validateParams(status, date, page string) (uint, ErrResp, error) {
+	var pageNum uint
+	if date != "" {
+		if err := validateDate(date); err != nil {
+			return 0, NewErr("date", date, "bad date format"), err
+		}
+	}
+	if status != "" {
+		_, err := strconv.ParseBool(status)
+		if err != nil {
+			return 0, NewErr("status", status, "bad status"), err
+		}
+	}
+	if page != "" {
+		temp, err := strconv.ParseUint(page, 10, 32)
+		if err != nil {
+			return 0, NewErr("page", page, "bad page"), err
+		}
+		pageNum = uint(temp)
+	}
+	return pageNum, ErrResp{}, nil
 }
 
 func errorHandler(w http.ResponseWriter, r *http.Request, log zerolog.Logger, date, taskID string, err error) {

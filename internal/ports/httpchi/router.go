@@ -26,7 +26,7 @@ func RegisterRoutes(r *chi.Mux, service Service) {
 	api := chi.NewRouter()
 
 	api.Post("/task", service.CreateTask)
-	api.Get("/tasks", nil)
+	api.Get("/tasks", service.ListTasks)
 	api.Get("/task/{id}", service.GetSingleTask)
 	api.Put("/task/{id}", service.UpdateTask)
 	api.Delete("/task/{id}", service.DeleteTask)

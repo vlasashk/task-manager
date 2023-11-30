@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+const defaultLimit = 10
+
 const (
 	DateViolation = "23514"
 )
@@ -140,6 +142,55 @@ func (db Repo) UpdateTask(newData todo.TaskReq, taskID string) (todo.Task, error
 	}
 
 	return updTask, nil
+}
+
+func (db Repo) ListTasks(page uint, date string, status string) ([]todo.Task, error) {
+	conn, err := db.DB.Acquire(db.ctx)
+	if err != nil {
+		return nil, fmt.Errorf("connection acquire fail: %v", err)
+	}
+	defer conn.Release()
+
+	var args []any
+
+	qry := `SELECT id, title, description, due_date, status FROM tasks WHERE deleted_at IS NULL`
+	args = []any{}
+
+	if date != "" {
+		qry += fmt.Sprintf(` AND due_date = $%d`, len(args)+1)
+		args = append(args, date)
+	}
+	if status != "" {
+		qry += fmt.Sprintf(` AND status = $%d`, len(args)+1)
+		args = append(args, status)
+	}
+
+	qry += fmt.Sprintf(` ORDER BY due_date LIMIT $%d OFFSET $%d`, len(args)+1, len(args)+2)
+
+	args = append(args, defaultLimit, page*defaultLimit)
+
+	rows, err := conn.Query(db.ctx, qry, args...)
+	if err != nil {
+		return nil, fmt.Errorf("executing query fail: %v", err)
+	}
+	defer rows.Close()
+
+	tasks := make([]todo.Task, 0, defaultLimit)
+
+	for rows.Next() {
+		var task todo.Task
+		var tempTime time.Time
+		if err = rows.Scan(&task.ID, &task.Title, &task.Description, &tempTime, &task.Status); err != nil {
+			return nil, fmt.Errorf("scanning rows fail: %v", err)
+		}
+		task.DueDate = tempTime.Format("2006-01-02")
+		tasks = append(tasks, task)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating rows: %v", err)
+	}
+
+	return tasks, nil
 }
 
 func txFinisher(ctx context.Context, tx pgx.Tx, err error) {

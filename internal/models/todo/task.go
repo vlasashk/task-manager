@@ -13,7 +13,7 @@ type TaskReq struct {
 	Title       string `json:"title" validate:"required"`
 	Description string `json:"description" validate:"required"`
 	DueDate     string `json:"due_date" validate:"required"`
-	Status      bool   `json:"status" validate:"required"`
+	Status      *bool  `json:"status" validate:"required"`
 }
 
 func New(req TaskReq) Task {
