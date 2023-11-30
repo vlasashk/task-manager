@@ -19,7 +19,10 @@ func NewRouter(service Service, logger zerolog.Logger) http.Handler {
 	r.Use(middleware.CleanPath)
 	r.Use(middleware.Recoverer)
 
-	r.NotFound(http.NotFound)
+	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/api/swagger/index.html", http.StatusFound)
+	})
+
 	RegisterRoutes(r, service)
 	return r
 }
@@ -32,7 +35,7 @@ func RegisterRoutes(r *chi.Mux, service Service) {
 	api.Get("/task/{id}", service.GetSingleTask)
 	api.Put("/task/{id}", service.UpdateTask)
 	api.Delete("/task/{id}", service.DeleteTask)
+	api.Get("/swagger/*", httpSwagger.WrapHandler)
 
 	r.Mount("/api", api)
-	r.Mount("/swagger", httpSwagger.WrapHandler)
 }
