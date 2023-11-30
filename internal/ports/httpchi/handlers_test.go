@@ -330,13 +330,76 @@ func (suite *UnitTestSuite) TestListTasks() {
 			page:   "",
 			TestCase: TestCase{
 				storageOutput: func() {
-
 					suite.storage.(*mocks.Repo).On("ListTasks", uint(0), "", "").Return(tasks, nil).Once()
 				},
 				expectedCode: http.StatusOK,
 				expectedResp: `[{"id":"test","title":"test","description":"test","due_date":"2024-10-26","status":false},{"id":"test2","title":"test2","description":"test2","due_date":"2024-10-26","status":true}]`,
 				reqMethod:    "GET",
 				reqTarget:    "/tasks?",
+			},
+		},
+		{
+			date:   "2024-10-26",
+			status: "true",
+			page:   "1",
+			TestCase: TestCase{
+				storageOutput: func() {
+					suite.storage.(*mocks.Repo).On("ListTasks", uint(1), "2024-10-26", "true").Return([]todo.Task{}, nil).Once()
+				},
+				expectedCode: http.StatusNotFound,
+				expectedResp: `{"message":"nothing found"}`,
+				reqMethod:    "GET",
+				reqTarget:    "/tasks?",
+			},
+		},
+		{
+			date:   "2024-10-26",
+			status: "true",
+			page:   "1",
+			TestCase: TestCase{
+				storageOutput: func() {
+					suite.storage.(*mocks.Repo).On("ListTasks", uint(1), "2024-10-26", "true").Return(nil, errors.New("any error")).Once()
+				},
+				expectedCode: http.StatusInternalServerError,
+				expectedResp: `{"param":"id","error":"action fail"}`,
+				reqMethod:    "GET",
+				reqTarget:    "/tasks?",
+			},
+		},
+		{
+			date:   "12345",
+			status: "",
+			page:   "",
+			TestCase: TestCase{
+				storageOutput: func() {},
+				expectedCode:  http.StatusBadRequest,
+				expectedResp:  `{"param":"date","value":"12345","error":"bad date format"}`,
+				reqMethod:     "GET",
+				reqTarget:     "/tasks?",
+			},
+		},
+		{
+			date:   "",
+			status: "fail",
+			page:   "",
+			TestCase: TestCase{
+				storageOutput: func() {},
+				expectedCode:  http.StatusBadRequest,
+				expectedResp:  `{"param":"status","value":"fail","error":"bad status"}`,
+				reqMethod:     "GET",
+				reqTarget:     "/tasks?",
+			},
+		},
+		{
+			date:   "",
+			status: "",
+			page:   "fail",
+			TestCase: TestCase{
+				storageOutput: func() {},
+				expectedCode:  http.StatusBadRequest,
+				expectedResp:  `{"param":"page","value":"fail","error":"bad page"}`,
+				reqMethod:     "GET",
+				reqTarget:     "/tasks?",
 			},
 		},
 	}

@@ -121,7 +121,7 @@ func (s Service) ListTasks(w http.ResponseWriter, r *http.Request) {
 	}
 	if len(tasks) == 0 {
 		log.Warn().Str("status", status).Str("date", date).Str("page", page).Msg("nothing found")
-		NewErr("", "", "nothing found").Send(w, r, http.StatusNotFound)
+		NewMsg("nothing found").Send(w, r, http.StatusNotFound)
 		return
 	}
 	log.Info().Int("amount", len(tasks)).Msg("found successfully")
