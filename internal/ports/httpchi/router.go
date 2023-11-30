@@ -35,6 +35,7 @@ func RegisterRoutes(r *chi.Mux, service Service) {
 	api.Get("/task/{id}", service.GetSingleTask)
 	api.Put("/task/{id}", service.UpdateTask)
 	api.Delete("/task/{id}", service.DeleteTask)
+
 	api.Get("/swagger/*", httpSwagger.WrapHandler)
 
 	r.Mount("/api", api)
